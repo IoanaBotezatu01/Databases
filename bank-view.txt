@@ -1,0 +1,22 @@
+create or alter view ShowAllClients
+as
+	select c.client_name, c.client_id, i.order_number_invest, s.order_number_serv
+	from Clients c
+	LEFT JOIN
+        (SELECT client_name, ROW_NUMBER() OVER (ORDER BY client_name) AS order_number_invest
+         FROM InvestingServicesClient) i 
+		 ON c.client_name = i.client_name
+	LEFT JOIN 
+		(SELECT client_id, ROW_NUMBER() OVER( ORDER BY client_id) as order_number_serv
+		from BankingServicesClients) s
+		on c.client_id = s.client_id
+
+	where c.client_id in (select client_id 
+						from BankingServicesClients
+						group by client_id
+						) and c.client_name in (select client_name 
+											  from InvestingServicesClient
+											  group by client_name)
+
+go
+select * from ShowAllClients

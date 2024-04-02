@@ -1,0 +1,203 @@
+
+SET NOCOUNT ON;
+drop table if exists Genre
+drop table if exists Book
+drop table if exists Author
+
+CREATE TABLE Genre(
+	genre_id int not null primary key,
+	genre_rank int unique not null,
+	genre_name varchar(100)
+)
+
+
+
+CREATE TABLE Author(
+	author_id int not null primary key,
+	author_nr_of_books int not null,
+	author_name  varchar(15)
+)
+
+CREATE Table Book(
+	book_id integer not null primary key,
+	genre_id integer,
+	author_id integer,
+	foreign key (genre_id) references Genre(genre_id) on delete cascade on update cascade,
+	foreign key (author_id) references Author(author_id) on delete cascade on update cascade
+)
+
+DROP FUNCTION IF EXISTS RandIntBetween;
+GO
+
+-- With this function, you generate a random number taken from a given interval
+CREATE FUNCTION RandIntBetween(@lower INT, @upper INT, @rand FLOAT)
+RETURNS INT
+AS
+BEGIN
+  DECLARE @result INT;
+  DECLARE @range INT = @upper - @lower + 1;
+  SET @result = FLOOR(@rand * @range + @lower);
+  RETURN @result;
+END
+GO
+
+
+
+
+-- With this procedure I insert some random data into the table Genre
+CREATE PROCEDURE insertDataIntoGenre 
+@rows INT
+AS
+BEGIN
+    DECLARE @genre_id INT = 1;
+    DECLARE @genre_rank INT = 1;
+    DECLARE @genre_name VARCHAR(100) = 'Default Name';
+
+    WHILE @rows > 0
+    BEGIN
+        INSERT INTO Genre (genre_id, genre_rank, genre_name)
+        VALUES (@genre_id, @genre_rank, @genre_name);
+
+        SET @genre_id = @genre_id + 1;
+        SET @genre_rank = @genre_rank + 1;
+        SET @rows = @rows - 1;
+    END
+END
+GO
+
+DROP PROCEDURE IF EXISTS insertDataIntoGenre;
+GO
+
+EXEC insertDataIntoGenre 300
+
+SELECT * FROM Genre
+
+EXEC sp_helpindex Genre
+
+-- 1. Clustered Index Scan
+--  scan the entire table
+
+SELECT *
+FROM Genre
+
+-- 2. Clustered Index Seek
+--  range of rows => seek
+
+
+SELECT *
+FROM Genre
+WHERE genre_id between 1 and 100
+
+-- 3. Non-Clustered Index Scan
+
+SELECT genre_rank
+FROM Genre
+
+-- 4. Non-Clustered Index Seek
+-- search for values of the genre_rank column (UNIQUE constraint) 
+
+SELECT genre_rank
+FROM Genre
+WHERE genre_rank >50
+
+-- 5. Key Look-Up
+
+SELECT genre_rank, genre_name
+FROM Genre
+WHERE genre_rank= 10;
+
+CREATE PROCEDURE insertDataIntoAuthor 
+@rows INT
+AS
+BEGIN
+    DECLARE @author_id INT = 1;
+    DECLARE @author_nr_of_books INT = 1;
+    DECLARE @author_name VARCHAR(15) = 'Default Name';
+
+    WHILE @rows > 0
+    BEGIN
+        SET @author_nr_of_books = @author_nr_of_books + 1;
+        IF @author_nr_of_books > 20
+            SET @author_nr_of_books = 10;
+
+        INSERT INTO Author (author_id, author_nr_of_books, author_name)
+        VALUES (@author_id, @author_nr_of_books, @author_name);
+
+        SET @author_id = @author_id + 1;
+        SET @rows = @rows - 1;
+    END
+END
+GO
+
+
+exec insertDataIntoAuthor 300
+select * from Author
+
+EXEC sp_helpindex Author
+
+-- Create a nonclustered index on column nr_if_books in Author
+drop index if exists idx_author
+CREATE NONCLUSTERED INDEX idx_author
+ON Author(author_nr_of_books);
+
+SELECT *
+FROM Author
+WHERE author_nr_of_books = 15
+
+select * from Author
+
+ Delete from Author where author_id between 1 and 300
+
+
+ CREATE OR ALTER PROCEDURE InsertIntoBook
+    @nrOfRows INT
+AS
+BEGIN
+    DECLARE @bookID INT
+    DECLARE @genreID INT
+    DECLARE @authorID INT
+
+    SET @bookID = (SELECT MAX(book_id) + 1 FROM Book)  -- Get the next available bookID
+    IF @bookID IS NULL
+        SET @bookID = 1
+
+    WHILE @nrOfRows > 0
+    BEGIN
+        SET @genreID = [dbo].[RandIntBetween](1, 300, RAND())  -- Assuming 10 genres available
+        SET @authorID = [dbo].[RandIntBetween](1, 300, RAND())  -- Assuming 100 authors available
+
+        INSERT INTO Book (book_id, genre_id, author_id)
+        VALUES (@bookID, @genreID, @authorID)
+
+        SET @nrOfRows = @nrOfRows - 1
+        SET @bookID = @bookID + 1
+    END
+END
+GO
+
+
+exec InsertIntoBook 300
+
+select * from Book
+
+exec sp_helpindex Book
+
+CREATE VIEW View1
+AS
+SELECT Author.*, Genre.*
+FROM Author
+JOIN Genre ON Author.author_nr_of_books = Genre.genre_rank;
+
+select * from View1
+
+
+DECLARE @start1 DATETIME = GETDATE();
+SELECT * FROM view1
+DECLARE @end1 DATETIME = GETDATE();
+
+PRINT   ' total time: ' + CONVERT(NVARCHAR(MAX), DATEDIFF(millisecond, @start1, @end1)) + ' milliseconds';
+
+create nonclustered index idx_aid on Book(genre_id)
+drop index if exists idx_aid on Book
+create nonclustered index idx_bid on Book(author_id)
+drop index if exists idx_bid on Book
