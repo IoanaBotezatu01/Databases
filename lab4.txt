@@ -1,0 +1,145 @@
+use [lab2-coffee-Shop-F]
+
+
+IF EXISTS (SELECT [name] FROM sys.objects 
+            WHERE object_id = OBJECT_ID('RandIntBetween'))
+BEGIN
+   DROP FUNCTION RandIntBetween;
+END
+GO
+
+
+
+CREATE FUNCTION RandIntBetween(@lower INT, @upper INT, @rand FLOAT)
+RETURNS INT
+AS
+BEGIN
+  DECLARE @result INT;
+  DECLARE @range INT = @upper - @lower + 1;
+  SET @result = FLOOR(@rand * @range + @lower);
+  RETURN @result;
+END
+GO
+
+
+--Delete data from a table
+
+GO
+CREATE OR ALTER PROC deleteData
+@table_id INT
+AS
+BEGIN
+	-- we get the table name
+	DECLARE @table_name NVARCHAR(50) = (
+		SELECT [Name] FROM [Tables] WHERE TableID = @table_id
+	)
+
+	-- we declare the function we are about to execute
+	DECLARE @function NVARCHAR(MAX)
+	-- we set the function
+	SET @function = N'DELETE FROM ' + @table_name
+	PRINT @function
+	-- we execute the function
+	EXEC sp_executesql @function
+END
+GO
+
+--Delete data from all tables
+
+CREATE OR ALTER PROC deleteDataFromAllTables
+@test_id INT
+AS
+BEGIN
+	DECLARE @tableID INT
+	DECLARE cursorForDelete cursor local for
+		SELECT TT.TableID
+		FROM TestTables TT
+			INNER JOIN Tests T ON TT.TestID = T.TestID
+		WHERE T.TestID = @test_id
+		ORDER BY TT.Position DESC
+
+	OPEN cursorForDelete
+	FETCH cursorforDelete INTO @tableID
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		exec deleteData @tableID
+
+		FETCH NEXT FROM cursorForDelete INTO @tableID
+	END
+	CLOSE cursorForDelete
+END
+GO
+
+--Insert data into "Owners" Table
+--a table with a single-column primary key and no foreign keys;
+CREATE OR ALTER PROC insertDataIntoOwners
+@nrOfRows INT,
+@tableName VARCHAR(50)
+AS
+BEGIN
+	DECLARE @newOwnerId INT
+	DECLARE @Name VARCHAR(30)
+	DECLARE @Age integer
+	SET @newOwnerId = (SELECT MAX(owner_id)+1 FROM Owners)
+	if @newOwnerId is NULL
+		SET @newOwnerId = 1
+	WHILE @nrOfRows > 0
+	BEGIN
+		SET @Name = (SELECT CHOOSE( CAST(RAND()*(10)+1 AS INT),'Name1','Name2','Name3','Name4', 'Name5','Name6','Name7','Name8','Name9','Name10'))
+		WHILE @Name is NULL
+		BEGIN
+			SET @Name = (SELECT CHOOSE( CAST(RAND()*(10)+1 AS INT),'Name1','Name2','Name3','Name4', 'Name5','Name6','Name7','Name8','Name9','Name10'))
+		END
+		SET @Age = [dbo].[RandIntBetween](1, 100, RAND())
+	INSERT INTO Owners(owner_id, age, owner_name) VALUES (@newOwnerId, @Age, @Name)
+	SET @nrOfRows = @nrOfRows - 1
+	SET @newOwnerId = @newOwnerId + 1
+	END
+END
+GO
+
+/*
+CREATE TABLE Customers(
+	customer_id int PRIMARY KEY,
+	customer_name varchar(15),
+	customer_age int,
+	table_id int FOREIGN KEY REFERENCES CoffeeTables(table_id)
+);
+*/
+
+--a table with a single-column primary key and at least one foreign key;
+CREATE OR ALTER PROC insertDataIntoCustomers
+@nrOfRows INT,
+@tableName VARCHAR(50)
+AS
+BEGIN
+	Declare @newCustomerId Int
+	Declare @CustomerName Varchar(15)
+	Declare @CustomerAge int
+	Declare @newTableId int
+	SET @newCustomerId =(select Max(customer_id)+1 from Customers)
+	if @newCustomerId is NULL
+		SET @newCustomerId = 1
+	while @nrOfRows>0
+	BEGIN
+		SET @newTableId = (SELECT TOP 1 C.table_id
+						FROM CoffeeTables C TABLESAMPLE (1000 ROWS)
+							ORDER BY NEWID())
+		WHILE @newTableId is NULL
+		BEGIN
+			SET @newTableId = (SELECT TOP 1 C.table_id
+				FROM CoffeeTables C TABLESAMPLE (1000 ROWS)
+					ORDER BY NEWID())
+		END
+		SET @CustomerName = (SELECT CHOOSE( CAST(RAND()*(10)+1 AS INT),'Name1','Name2','Name3','Name4', 'Name5','Name6','Name7','Name8','Name9','Name10'))
+		WHILE @CustomerName is NULL
+		BEGIN
+			SET @CustomerName = (SELECT CHOOSE( CAST(RAND()*(10)+1 AS INT),'Name1','Name2','Name3','Name4', 'Name5','Name6','Name7','Name8','Name9','Name10'))
+		END
+		SET @CustomerAge = [dbo].[RandIntBetween](1, 100, RAND())
+		INSERT INTO Customers(customer_id, customer_name, customer_age,table_id) VALUES(@newCustomerId, @CustomerName,@CustomerAge, @newTableId)
+		SET @nrOfRows = @nrOfRows - 1
+		SET @newCustomerId = @newCustomerId + 1
+	END
+	END
+GO
