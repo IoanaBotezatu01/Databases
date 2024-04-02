@@ -1,0 +1,803 @@
+CREATE TABLE Owners(
+	owner_id int PRIMARY KEY,
+	owner_name varchar(15),
+	age int
+);
+
+CREATE TABLE Shops(
+	shop_id int PRIMARY KEY,
+	shop_name varchar(15),
+	rating float,
+	addr varchar(15),
+	phone_number varchar(15),
+	owner_id int FOREIGN KEY REFERENCES Owners(owner_id) 
+);
+
+CREATE TABLE CoffeeTables(
+	table_id int Primary Key,
+	capacity int,
+	shop_id int FOREIGN KEY REFERENCES Shops(shop_id),
+	serving_date date
+
+);
+
+CREATE TABLE Badge(
+	badge_id int PRIMARY KEY,
+	badge_color varchar(15)
+
+);
+
+CREATE TABLE CoffeeServers(
+	server_id int PRIMARY KEY,
+	server_name varchar(15),
+	server_age int,
+	badge_id int FOREIGN KEY REFERENCES Badge(badge_id) UNIQUE ,
+	shop_id int FOREIGN KEY REFERENCES Shops(shop_id) 
+);
+
+CREATE TABLE Customers(
+	customer_id int PRIMARY KEY,
+	customer_name varchar(15),
+	customer_age int,
+	table_id int FOREIGN KEY REFERENCES CoffeeTables(table_id)
+);
+
+CREATE TABLE Machine(
+	coffee_machine_id int PRIMARY Key,
+	coffee_machine_name varchar(15)
+);
+
+CREATE TABLE Coffee(
+	coffee_id int Primary key,
+	coffee_name varchar(15),
+	price int,
+	quantity int,
+	intensity int,
+	
+);
+
+CREATE TABLE IsMadeAt(
+	machine_id int FOREIGN KEY REFERENCES  Machine(coffee_machine_id),
+	coffee_id int FOREIGN KEY REFERENCES  Coffee(coffee_id),
+	m_id int PRIMARY KEY
+);
+
+CREATE TABLE Orders(
+	coffee_id int FOREIGN KEY REFERENCES Coffee(coffee_id),
+	customer_id int FOREIGN KEY REFERENCES Customers(customer_id),
+	server_id int FOREIGN KEY REFERENCES CoffeeServers(server_id),
+	order_id int PRIMARY KEY
+);
+
+CREATE TABLE Distributors(
+	dist_id int PRIMARY KEY,
+	dist_name varchar(15),
+	
+);
+CREATE TABLE DistributesTo(
+	dist_id int Foreign  key references  Distributors(dist_id),
+	shop_id int Foreign key references  Shops(shop_id),
+	quantity int,
+	restock_day date,
+	res_id int PRIMARY KEY
+);
+
+Create Table Cups(
+	cups_id int not null,
+	cups_color varchar(15),
+	cups_quantity int
+);
+DROP TABLE IF EXISTS Cups;
+
+-- Owners table
+INSERT INTO Owners (owner_id, owner_name, age) VALUES 
+(1, 'John Doe', 35),
+(2, 'Jane Smith', 28),
+(3, 'Mark Johnson', 40),
+(4, 'Emily Davis', 32),
+(5, 'Michael White', 45);
+select* from Owners
+-- Shops table
+INSERT INTO Shops (shop_id, shop_name, rating, addr, phone_number, owner_id) VALUES 
+(1, 'Coffee Haven', 4.5, '123 Main St', '0755123456', 1),
+(2, 'Bean Bliss', 4.2, '456 Oak St', '0755567890', 2),
+(3, 'Mocha Magic', 4.0, '789 Pine St', '0755101010', 3),
+(4, 'Brewed', 4.3, '101 Maple St', '0755202020', 4),
+(5, 'Caffee Central', 4.7, '202 Oakwood Ave', '0755303030', 5);
+select* from Shops
+
+-- CoffeeTables table
+INSERT INTO CoffeeTables (table_id, capacity, shop_id, serving_date) VALUES 
+(1, 4, 1, '2023-09-15'),
+(2, 6, 2, '2023-09-22'),
+(3, 2, 3, '2023-09-30'),
+(4, 5, 4, '2023-10-07'),
+(5, 3, 5, '2023-10-15'),
+(6, 4, 3, '2023-10-23'),
+(7, 5, 5, '2023-10-31'),
+(8, 2, 4, '2023-11-08'),
+(9, 3, 2, '2023-11-16'),
+(10, 4, 1, '2023-11-24');
+select* from CoffeeTables
+
+-- Badge table
+INSERT INTO Badge (badge_id, badge_color) VALUES 
+(1, 'Blue'),
+(2, 'Red'),
+(3, 'Green'),
+(4, 'Yellow'),
+(5, 'Purple');
+select* from Badge
+delete from Badge where badge_id=20;
+
+
+-- CoffeeServers table
+INSERT INTO CoffeeServers (server_id, server_name, server_age, badge_id, shop_id) VALUES 
+(1, 'Alex Green', 25, 1, 1),
+(2, 'Emily Brown', 22, 2, 2),
+(3, 'Charlie White', 28, 3, 3),
+(4, 'James Black', 30, 4, 4),
+(5, 'Sophia Red', 28, 5, 5);
+select* from CoffeeServers
+
+-- Customers table
+INSERT INTO Customers (customer_id, customer_name, customer_age, table_id) VALUES 
+(7, 'Alice Johnson', 30, 3),
+(4, 'Bob Miller', 35, 2),
+(2, 'Charlie Davis', 28, 6),
+(10, 'David White', 32, 1),
+(6, 'Eva Brown', 29, 9),
+(1, 'Frank Smith', 26, 5),
+(9, 'Grace Wilson', 17, 6),
+(3, 'Henry Black', 28, 8),
+(5, 'Ivy Red', 33, 4),
+(8, 'Jack Green', 30, 10);
+select* from Customers
+
+-- Machine table
+INSERT INTO Machine (coffee_machine_id, coffee_machine_name) VALUES 
+(1, 'Espresso Mach'),
+(2, 'Cappuccino Mach'),
+(3, 'Latte Mach'),
+(4, 'Drip Coffee'),
+(5, 'Coffee Brewer');
+select* from Machine
+
+
+-- Coffee table
+INSERT INTO Coffee (coffee_id, coffee_name, price, quantity, intensity) VALUES 
+(1, 'Espresso', 2.5, 100, 4),
+(2, 'Latte', 4.0, 80, 2),
+(3, 'Drip Coffee', 3.0, 120, 3),
+(4, 'Cappuccino', 4.5, 90, 3),
+(5, 'Mocha', 5.0, 70, 1);
+select* from Coffee
+
+
+-- IsMadeAt table
+INSERT INTO IsMadeAt (machine_id, coffee_id,m_id) VALUES 
+(1, 1,1),
+(3, 2,2),
+(4, 3,3),
+(2, 4,4),
+(1, 5,5);
+
+select* from IsMadeAt
+
+-- Orders table
+INSERT INTO Orders (coffee_id, customer_id, server_id,order_id) VALUES 
+(1, 7, 3,1),
+(2, 4, 4,2),
+(3, 2, 1,3),
+(4, 5, 5,4),
+(5, 1, 2,5),
+(1, 6, 4,6),
+(2, 9, 5,7),
+(3, 3, 2,8),
+(4, 5, 1,9),
+(5, 8, 3,10),
+(1, 1, 4,11),
+(2, 2, 5,12),
+(3, 3, 2,13),
+(4, 4, 1,14),
+(5, 5, 3,15),
+(1, 10, 1,16),
+(2, 8, 3,17),
+(3, 6, 5,18),
+(4, 9, 2,19),
+(5, 7, 4,20);
+INSERT INTO Orders (coffee_id, customer_id, server_id,order_id) VALUES 
+(3, 7, 3, 21),
+(4, 7, 5, 22);
+UPDATE Orders
+SET coffee_id=2 
+where order_id=19;
+
+UPDATE Orders
+set customer_id=7
+where order_id=19
+
+DELETE FROM Orders WHERE order_id=23
+
+
+select* from Orders
+
+-- Distributors table
+INSERT INTO Distributors (dist_id, dist_name) VALUES 
+(1, 'Bean Dist'),
+(2, 'Coffee Connect'),
+(3, 'Mocha Merchants'),
+(4, 'Espresso'),
+(5, 'Cappuccino Co.');
+select* from Distributors
+
+Insert into Cups(cups_id,cups_color,cups_quantity) Values
+(1,'red',150);
+
+-- DistributesTo table
+INSERT INTO DistributesTo (dist_id, shop_id, quantity, restock_day,res_id) VALUES 
+(2, 4, 200, '2023-09-20',1),
+(4, 5, 150, '2023-10-05',2),
+(1, 2, 180, '2023-10-15',3),
+(5, 3, 220, '2023-11-01',4),
+(3, 1, 190, '2023-11-10',5),
+(1, 5, 210, '2023-09-25',6),
+(3, 4, 170, '2023-10-12',7),
+(2, 3, 200, '2023-10-22',8),
+(5, 2, 160, '2023-11-05',9),
+(4, 1, 190, '2023-11-15',10);
+
+Select *
+From DistributesTo
+
+
+--A
+--  Numele de cafele cu intensitate mai mare de 3 SAU egala cu 1
+SELECT coffee_name as List
+FROM Coffee
+WHERE intensity >3
+UNION
+SELECT coffee_name
+FROM Coffee
+where intensity=1
+
+
+-- Numele și vârsta serverilor care au vârsta peste 25 de ani SAU egala cu 25
+SELECT server_name, server_age
+FROM CoffeeServers
+WHERE server_age > 25
+   OR
+   server_age=25;
+
+--B
+-- Numele de cafele cu intensitate mai mare de 2 INTERSECTAT cu numele de cafele cu preț mai mare de 3.5
+SELECT coffee_name
+FROM Coffee
+WHERE intensity > 2
+INTERSECT
+SELECT coffee_name
+FROM Coffee
+WHERE price > 3.5;
+
+--Numele de serveri cu vârsta 25,28 sau 30 de ani,ordonati crescator
+SELECT server_name,server_age
+FROM CoffeeServers
+WHERE server_age IN (25,30,28)
+order by server_age
+
+  --C
+  -- Numele de cafele cu intensitate mai mare de 2 EXCEPT cafelele cu preț mai mare de 3.5
+SELECT coffee_name
+FROM Coffee
+WHERE intensity > 2
+EXCEPT
+SELECT coffee_name
+FROM Coffee
+WHERE price > 3.5;
+
+--Numele Clientlor care nu au sub 18 ani
+SELECT customer_name
+from Customers
+WHERE customer_age NOT IN (10,11,12,13,14,15,16,17,18)
+
+--D
+--Numele clienților, id-urile meselor de cafea,capacitatea meselor asociate acestora si  numele celor ce au servit-3 TABELE
+SELECT  C.customer_name, CT.table_id, CT.capacity,CS.server_name
+FROM Customers C
+INNER JOIN CoffeeTables CT ON C.table_id = CT.table_id
+INNER JOIN CoffeeServers CS ON CT.shop_id = CS.shop_id
+
+--Numele clienților, numele comenzilor, numele serverilor de cafea și tipurile de cafea-2 relatii many to many
+SELECT C.customer_name, O.order_id, CS.server_name, CO.coffee_name
+FROM Customers C
+LEFT JOIN Orders O ON C.customer_id = O.customer_id
+LEFT JOIN CoffeeServers CS ON O.server_id = CS.server_id
+LEFT JOIN Coffee CO ON O.coffee_id = CO.coffee_id
+
+
+--Numele magazinelor,id-ul mesei si capacitatea
+SELECT  S.shop_name, CT.table_id, CT.capacity
+FROM CoffeeTables CT
+RIGHT JOIN Shops S ON CT.shop_id = S.shop_id
+Order by CT.capacity ;
+
+--Informații despre serveri de cafea și insignele lor, folosind FULL JOIN,ordonati descrescaor in fuctie de varsta
+SELECT TOP 5 CS.server_id, CS.server_name, CS.server_age, B.badge_color
+FROM CoffeeServers CS
+FULL JOIN Badge B ON CS.badge_id = B.badge_id
+ORDER BY CS.server_age DESC;
+
+
+
+--E
+--Numele clienților care au făcut cel puțin o comandă
+SELECT TOP 5 customer_name
+FROM Customers
+WHERE customer_id IN (SELECT DISTINCT customer_id FROM Orders);
+
+--Numele cafelelor care au fost comandate de clienți cu vârsta sub 25 de ani
+SELECT coffee_name
+FROM Coffee
+WHERE coffee_id IN (SELECT coffee_id
+                   FROM Orders
+                   WHERE customer_id IN (SELECT customer_id FROM Customers WHERE customer_age < 25));
+
+
+--F
+-- Afișează numele distribuitorilor care au furnizat cel puțin o dată la un magazin
+SELECT dist_name
+FROM Distributors D
+WHERE EXISTS (
+    SELECT 1
+    FROM DistributesTo DT
+    WHERE DT.dist_id = D.dist_id
+);
+
+-- Afișează numele clienților care au plasat cel puțin o comandă la un server care nu are peste 25 de ani
+SELECT customer_name
+FROM Customers C
+WHERE EXISTS (
+    SELECT 1
+    FROM Orders O
+    JOIN CoffeeServers CS ON O.server_id = CS.server_id
+    WHERE O.customer_id = C.customer_id
+    AND NOT  CS.server_age >25
+);
+
+--G
+--Afișează numele magazinelor și media aritmetica locurilor la masă
+SELECT shop_name, AVG(capacity) AS average_capacity
+FROM (
+    SELECT S.shop_name, CT.capacity
+    FROM Shops S
+    JOIN CoffeeTables CT ON S.shop_id = CT.shop_id
+) AS ShopCapacity
+GROUP BY shop_name;
+
+--Afișează numele serverilor și vârsta lor
+SELECT server_name, server_age
+FROM (
+    SELECT CS.server_name, CS.server_age
+    FROM CoffeeServers CS
+) AS ServerAge;
+
+--Afișează numele serverilor și culorile badge-urilor asociate acestora
+SELECT server_name, badge_color
+FROM (
+    SELECT CS.server_name, B.badge_color
+    FROM CoffeeServers CS
+    LEFT JOIN Badge B ON CS.badge_id = B.badge_id
+) AS ServerBadges;
+
+--E
+--Afișează numărul de comenzi procesate de fiecare server, împreună cu numele serverului
+SELECT CS.server_name, COUNT(O.order_id) AS total_orders
+FROM Orders O
+JOIN CoffeeServers CS ON O.server_id = CS.server_id
+GROUP BY CS.server_name;
+
+
+--Afișează suma prețurilor produselor comandate de fiecare client, dar doar pentru clienții cu cel puțin 3 comenzi
+SELECT C.customer_name, SUM(Co.price) AS total_spent
+FROM Orders O
+JOIN Customers C ON O.customer_id = C.customer_id
+JOIN Coffee Co ON O.coffee_id = Co.coffee_id
+GROUP BY C.customer_name
+HAVING COUNT(O.order_id) >= 3;
+
+
+-- Afișează media intensității cafelelor vândute în fiecare magazin, dar numai pentru magazinele cu o medie de intensitate mai mare de 2
+SELECT S.shop_name, AVG(C.intensity) AS avg_intensity
+FROM Coffee C
+JOIN CoffeeTables CT ON C.coffee_id = CT.table_id
+JOIN Shops S ON CT.shop_id = S.shop_id
+GROUP BY S.shop_name
+HAVING AVG(C.intensity) > 2;
+
+-- Afișează capacitatea minimă și maximă a meselor din fiecare magazin
+SELECT S.shop_name, MIN(CT.capacity) AS min_capacity, MAX(CT.capacity) AS max_capacity
+FROM CoffeeTables CT
+JOIN Shops S ON CT.shop_id = S.shop_id
+GROUP BY S.shop_name
+
+--F
+--Utilizând operatorul ANY cu subquery în clauza WHERE:
+-- Afișează serverii care au servit cel puțin o comandă cu un produs de cafea mai intens decat 3
+SELECT server_id, server_name
+FROM CoffeeServers
+WHERE server_id = ANY (
+    SELECT DISTINCT server_id
+    FROM Orders O
+    JOIN Coffee C ON O.coffee_id = C.coffee_id
+    WHERE C.intensity > 3
+);
+--ANY cu agregare
+SELECT server_id, server_name
+FROM CoffeeServers
+WHERE server_id IN (
+    SELECT server_id
+    FROM Orders O
+    JOIN Coffee C ON O.coffee_id = C.coffee_id
+    GROUP BY server_id
+    HAVING COUNT(DISTINCT CASE WHEN C.intensity > 3 THEN O.coffee_id END) > 0
+);
+
+
+--Utilizând operatorul ALL cu subquery în clauza WHERE:
+ --Afișează serverii care au servit toate produsele de cafea cu preț peste 3
+SELECT server_id, server_name
+FROM CoffeeServers
+WHERE server_id = ALL (
+    SELECT DISTINCT server_id
+    FROM Orders O
+    JOIN Coffee C ON O.coffee_id = C.coffee_id
+    WHERE C.price > 3
+    AND O.server_id = CoffeeServers.server_id
+);
+
+--ALL cu agregare
+SELECT server_id, server_name
+FROM CoffeeServers CS
+WHERE server_id IN (
+    SELECT server_id
+    FROM Orders O
+    JOIN Coffee C ON O.coffee_id = C.coffee_id
+    WHERE C.price > 4
+    GROUP BY server_id
+    HAVING COUNT(DISTINCT O.coffee_id) > 0
+);
+
+
+--ANY
+-- Afișează clientii care au plasat cel puțin o comandă pentru produse cu intensitate 4
+SELECT customer_id, customer_name
+FROM Customers
+WHERE customer_id = ANY (
+    SELECT DISTINCT customer_id
+    FROM Orders O
+    JOIN Coffee C ON O.coffee_id = C.coffee_id
+    WHERE C.intensity = 4
+);
+
+--IN 
+-- Afișează clienții care au plasat cel puțin o comandă pentru produse cu intensitate 4
+SELECT customer_id, customer_name
+FROM Customers
+WHERE customer_id IN (
+    SELECT DISTINCT O.customer_id
+    FROM Orders O
+    JOIN Coffee C ON O.coffee_id = C.coffee_id
+    WHERE C.intensity = 4
+);
+
+
+
+-- Afișează clienții care au comandat toate tipurile de cafea
+SELECT customer_id, customer_name
+FROM Customers C
+WHERE C.customer_id = ALL (
+    SELECT O.customer_id
+    FROM Orders O
+    JOIN Coffee C ON O.coffee_id = C.coffee_id
+    GROUP BY O.customer_id
+    HAVING COUNT(DISTINCT C.coffee_id) = (SELECT COUNT(DISTINCT coffee_id) FROM Coffee)
+);
+
+
+
+
+--IN
+-- Afișează clienții care au comandat toate tipurile de cafea
+SELECT customer_id, customer_name
+FROM Customers C
+WHERE NOT EXISTS (
+    SELECT DISTINCT coffee_id
+    FROM Coffee
+    WHERE coffee_id NOT IN (
+        SELECT DISTINCT O.coffee_id
+        FROM Orders O
+        WHERE O.customer_id = C.customer_id
+    )
+);
+
+
+
+----------------------------LAB 3----------------------------
+
+use [lab2-coffee-Shop-F]
+
+-- a. modify the type of a column;
+-- modify server age from int to tiny int
+CREATE OR ALTER PROCEDURE setServerAgeToTinyInt 
+AS
+BEGIN
+	ALTER TABLE CoffeeServers
+		ALTER COLUMN server_age TINYINT
+END
+GO
+exec setServerAgeToTinyInt
+
+-- reverse operation: modify player age from tiny int to int
+
+CREATE OR ALTER PROCEDURE setServerAgeToInt 
+AS
+BEGIN
+	ALTER TABLE CoffeeServers
+		ALTER COLUMN server_age INT
+END
+GO
+exec setServerAgeToInt
+
+
+-- b. add a column      
+--adds a column that checks if a server works full time
+
+CREATE OR ALTER PROC uspAddIsFullTimeColumn
+AS
+BEGIN
+	ALTER TABLE CoffeeServers
+	ADD isFullTime BIT
+	PRINT 'ALTER TABLE CoffeeServers ADD COLUMN isFullTime BIT'
+END
+GO
+exec uspAddIsFullTimeColumn
+
+-- b. undo
+
+CREATE OR ALTER PROC UNDOuspAddIsFullTimeColumn
+AS
+BEGIN
+	ALTER TABLE CoffeeServers
+	DROP COLUMN isFullTime
+	PRINT 'ALTER TABLE CoffeeServers DROP COLUMN isFullTime'
+END
+GO
+exec UNDOuspAddIsFullTimeColumn
+
+-- c. add a DEFAULT constraint
+--add default quantity as 0
+CREATE OR ALTER PROC uspAddDefaultConstraintCoffeeQuantity
+AS
+BEGIN
+	ALTER TABLE Coffee
+	ADD CONSTRAINT default_CoffeeQuantity DEFAULT 0 FOR quantity
+	PRINT 'ALTER TABLE Coffee ADD CONSTRAINT DEFAULT 0 FOR quantity'
+END
+GO
+exec uspAddDefaultConstraintCoffeeQuantity
+
+-- c. undo
+CREATE OR ALTER PROC UNDOuspAddDefaultConstraintCoffeeQuantity
+AS
+BEGIN
+	ALTER TABLE Coffee
+	DROP CONSTRAINT default_CoffeeQuantity
+	PRINT 'ALTER TABLE Coffee DROP CONSTRAINT DEFAULT 0 FOR quantity'
+END
+GO
+exec UNDOuspAddDefaultConstraintCoffeeQuantity
+
+-- d. add a primary key
+
+CREATE OR ALTER PROC uspAddPrimaryKeyDistributors
+AS
+BEGIN
+	ALTER TABLE Cups
+	ADD CONSTRAINT pk_Cups PRIMARY KEY (cups_id)
+	PRINT 'ALTER TABLE Cups ADD CONSTRAINT pk_Cups PRIMARY KEY (cups_id)'
+END
+GO
+exec uspAddPrimaryKeyDistributors
+
+-- d. undo
+
+CREATE OR ALTER PROC UNDOuspAddPrimaryKeyDistributors
+AS
+BEGIN
+	ALTER TABLE Cups
+	DROP CONSTRAINT pk_Cups
+	PRINT 'ALTER TABLE Cups DROP CONSTRAINT pk_Cups'
+END
+GO
+exec UNDOuspAddPrimaryKeyDistributors
+
+-- e. add a candidate key
+
+CREATE OR ALTER PROC uspAddCandidateKeyCoffeeServers
+AS
+BEGIN
+	ALTER TABLE CoffeeServers
+	ADD CONSTRAINT UQ_server_name UNIQUE(server_name)
+	PRINT 'ALTER TABLE CoffeeServers ADD CONSTRAINT UQ_server_name UNIQUE(server_name)'
+END
+GO
+exec uspAddCandidateKeyCoffeeServers
+
+-- e. undo
+
+CREATE OR ALTER PROC UNDOuspAddCandidateKeyCoffeeServers
+AS
+BEGIN
+	ALTER TABLE CoffeeServers
+	DROP CONSTRAINT UQ_server_name
+	PRINT 'ALTER TABLE CoffeeServers DROP CONSTRAINT UQ_server_name'
+END
+GO
+exec UNDOuspAddCandidateKeyCoffeeServers
+
+-- f. add a foreign key
+
+CREATE OR ALTER PROC uspAddForeignKeyIsMadeAt
+AS
+BEGIN
+	ALTER TABLE IsMadeAt
+	ADD CONSTRAINT FK_Coffee FOREIGN KEY (coffee_id) REFERENCES Coffee(coffee_id)
+	PRINT 'ALTER TABLE IsMadeAt ADD CONSTRAINT FK_Coffee FOREIGN KEY (coffee_id) REFERENCES Coffee(coffee_id)'
+END
+GO
+exec uspAddForeignKeyIsMadeAt
+
+-- f. undo
+
+CREATE OR ALTER PROC UNDOuspAddForeignKeyIsMadeAt
+AS
+BEGIN
+	ALTER TABLE IsMadeAt
+	DROP CONSTRAINT FK_Coffee
+	PRINT 'ALTER TABLE IsMadeAt DROP CONSTRAINT FK_Coffee'
+END
+GO
+exec UNDOuspAddForeignKeyIsMadeAt
+
+
+-- g. create / drop a table.
+-- Create a table for server shifts
+CREATE OR ALTER PROCEDURE addTableServerShifts
+AS
+CREATE TABLE ServerShifts
+(
+    shift_id INT PRIMARY KEY,
+    server_id INT FOREIGN KEY REFERENCES CoffeeServers(server_id),
+    shift_date DATE,
+    start_time TIME,
+    end_time TIME
+);
+GO
+
+exec addTableServerShifts
+-- g.Undo
+
+CREATE OR ALTER PROCEDURE uspDropServerShiftsTable
+AS
+BEGIN
+    DROP TABLE IF EXISTS ServerShifts;
+    PRINT 'DROP TABLE IF EXISTS ServerShifts';
+END;
+GO
+
+exec uspDropServerShiftsTable
+
+
+
+-- Create a new table that holds the current version of the database schema. 
+
+-- versions table
+
+CREATE TABLE versionsTable (
+	version INT
+)
+
+INSERT INTO versionsTable VALUES (1) --the initial version
+
+CREATE TABLE proceduresTable (
+	fromVersion INT,
+	toVersion INT,
+	PRIMARY KEY(fromVersion, toVersion),
+	procedureName VARCHAR(100)
+)
+
+INSERT INTO proceduresTable
+	(fromVersion, toVersion, procedureName)
+VALUES
+	(1, 2, 'setServerAgeToTinyInt'),
+	(2, 1, 'setServerAgeToInt'),
+	(2, 3, 'uspAddIsFullTimeColumn'),
+	(3, 2, 'UNDOuspAddIsFullTimeColumn'),
+	(3, 4, 'uspAddDefaultConstraintCoffeeQuantity'),
+	(4, 3, 'UNDOuspAddDefaultConstraintCoffeeQuantity'),
+	(4, 5, 'uspAddPrimaryKeyDistributors'),
+	(5, 4, 'UNDOuspAddPrimaryKeyDistributors'),
+	(5, 6, 'uspAddCandidateKeyCoffeeServers'),
+	(6, 5, 'UNDOuspAddCandidateKeyCoffeeServers'),
+	(6, 7, 'uspAddForeignKeyIsMadeAt'),
+	(7, 6, 'UNDOuspAddForeignKeyIsMadeAt'),
+	(7, 8, 'addTableServerShifts'),
+	(8, 7, 'uspDropServerShiftsTable');
+
+	CREATE OR ALTER PROCEDURE goToVersion(@newVersion INT) 
+AS
+	DECLARE @current INT
+	DECLARE @procedureName VARCHAR(100)
+	SELECT @current = version FROM versionsTable
+
+	IF  @newVersion < 1
+		RAISERROR ('Bad version', 10, 1)
+	ELSE
+	IF  @newVersion > (SELECT MAX(toVersion) FROM proceduresTable)
+		RAISERROR ('Bad version', 10, 1)
+	ELSE
+	BEGIN
+		IF @newVersion = @current
+			PRINT('Already on this version!');
+		ELSE
+		BEGIN
+			IF @current > @newVersion
+			BEGIN
+				WHILE @current > @newVersion
+				BEGIN
+					SELECT @procedureName = procedureName FROM proceduresTable 
+					WHERE fromVersion = @current AND toVersion = @current - 1
+					PRINT('executing: ' + @procedureName);
+					EXEC(@procedureName)
+					SET @current = @current - 1
+				END
+			END
+
+			IF @current < @newVersion
+			BEGIN
+				WHILE @current < @newVersion
+					BEGIN
+						SELECT @procedureName = procedureName FROM proceduresTable
+						WHERE fromVersion = @current AND toVersion = @current + 1
+						PRINT('executing: ' + @procedureName);
+						EXEC (@procedureName)
+						SET @current = @current + 1
+					END
+			END
+
+			UPDATE versionsTable SET version = @newVersion
+		END
+	END
+GO
+
+
+EXEC goToVersion -2
+
+
+SELECT * FROM proceduresTable;
+UPDATE versionsTable SET version=1
+
+SELECT * FROM versionsTable;
+
+select * from CoffeeServers
+select * from Coffee
+
+
+
+
+
+
+
+
+
+
